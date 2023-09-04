@@ -19,9 +19,24 @@ func CreateCommunity(ctx *gin.Context, client *mongo.Client, createCommunityRequ
 		Description: createCommunityRequest.Description,
 		Members: createCommunityRequest.Members,
 		Privacy: createCommunityRequest.Privacy,
+		CreatedBy: createCommunityRequest.CreatedBy,
 	}
 
 	_, err := client.Database(constants.DB).Collection(constants.COLLECTION_COMMUNITIES).InsertOne(ctx, community)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = client.Database(constants.DB).Collection(constants.COLLECTION_USERS).UpdateMany(ctx, 
+		bson.M{
+			"_id": bson.M{"$in": createCommunityRequest.Members},
+		},
+		bson.M{
+			"$push": bson.M{
+				"communities": newId,
+			},
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +46,7 @@ func CreateCommunity(ctx *gin.Context, client *mongo.Client, createCommunityRequ
 
 func GetCommunity(ctx *gin.Context, client *mongo.Client, id *primitive.ObjectID) (*model.Community, error) {
 	var community model.Community
-	client.Database(constants.DB).Collection(constants.COLLECTION_TRIPS).FindOne(ctx, bson.M{
+	client.Database(constants.DB).Collection(constants.COLLECTION_COMMUNITIES).FindOne(ctx, bson.M{
 		"_id": id,
 	}).Decode(&community)
 	return &community, nil

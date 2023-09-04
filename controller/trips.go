@@ -34,6 +34,20 @@ func CreateTrip(ctx *gin.Context, client *mongo.Client, createTripRequest *reque
 		return nil, err
 	}
 
+	_, err = client.Database(constants.DB).Collection(constants.COLLECTION_USERS).UpdateMany(ctx, 
+		bson.M{
+			"_id": bson.M{"$in": createTripRequest.Members},
+		},
+		bson.M{
+			"$push": bson.M{
+				"trips": newId,
+			},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &trip, nil
 }
 

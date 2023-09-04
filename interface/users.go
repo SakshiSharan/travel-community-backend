@@ -11,6 +11,6 @@ type CreateUser struct {
 }
 
 type AddFriend struct {
-	ID       primitive.ObjectID `json:"_id" bson:"_id"`
+	UserID       primitive.ObjectID `json:"userId" bson:"userId"`
 	FriendID primitive.ObjectID `json:"friendId" bson:"friendId"`
 }

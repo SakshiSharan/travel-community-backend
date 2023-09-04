@@ -59,6 +59,16 @@ func GetUser(ctx *gin.Context, client *mongo.Client, id *primitive.ObjectID) (*m
 	return &user, nil
 }
 
+func GetAllUsers(ctx *gin.Context, client *mongo.Client) (*[]model.User, error) {
+	var users []model.User
+	cursor, err := client.Database(constants.DB).Collection(constants.COLLECTION_USERS).Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	cursor.All(ctx, &users)
+	return &users, nil
+}
+
 
 // Add user to pending reqs of other user and add other user to sentreqs of current user
 func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *request.AddFriend) (*model.User, *model.User, error) {
@@ -66,7 +76,7 @@ func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *req
 	var friend model.User
 
 	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
-		"_id": addFriendRequest.ID,
+		"_id": addFriendRequest.UserID,
 	},
 	bson.M{
 		"$push": bson.M{
@@ -80,7 +90,7 @@ func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *req
 	},
 	bson.M{
 		"$push": bson.M{
-			"friends": addFriendRequest.ID,
+			"friends": addFriendRequest.UserID,
 		},
 	},
 	).Decode(&friend)
@@ -95,7 +105,7 @@ func AddFriend(ctx *gin.Context, client *mongo.Client, addFriendRequest *request
 	var friend model.User
 
 	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
-		"_id": addFriendRequest.ID,
+		"_id": addFriendRequest.UserID,
 	},
 	bson.M{
 		"$push": bson.M{
@@ -109,7 +119,7 @@ func AddFriend(ctx *gin.Context, client *mongo.Client, addFriendRequest *request
 	},
 	bson.M{
 		"$push": bson.M{
-			"friends": addFriendRequest.ID,
+			"friends": addFriendRequest.UserID,
 		},
 	},
 	).Decode(&friend)

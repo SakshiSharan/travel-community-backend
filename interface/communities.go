@@ -7,6 +7,7 @@ type CreateCommunity struct {
 	Description string               `json:"description" bson:"description"`
 	Members     []primitive.ObjectID `json:"members" bson:"members"`
 	Privacy     string               `json:"privacy" bson:"privacy"`
+	CreatedBy   primitive.ObjectID   `json:"createdBy" bson:"createdBy"`
 }
 
 type JoinCommunity struct {

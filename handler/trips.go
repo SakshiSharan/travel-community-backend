@@ -41,7 +41,7 @@ func (h *Handler) CreateTrip(ctx *gin.Context) {
 	} else {
 		ctx.JSON(200, gin.H{
 			"message": "Trip created successfully",
-			"user":    trip,
+			"trip":    trip,
 		})
 	}
 }

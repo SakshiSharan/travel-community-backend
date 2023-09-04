@@ -39,6 +39,7 @@ func main() {
 
 	// user
 	router.GET("/user/id", handler.GetUser)
+	router.GET("/user/all", handler.GetAllUsers)
 	router.POST("/user", handler.CreateUser)
 	router.PUT("/user/addfriend", handler.AddFriend)
 
@@ -50,7 +51,7 @@ func main() {
 	// community
 	router.GET("/community/id", handler.GetCommunity)
 	router.POST("/community", handler.CreateCommunity)
-	router.PUT("/Community/join", handler.JoinCommunity)
+	router.PUT("/community/join", handler.JoinCommunity)
 
 	router.Run()
 }

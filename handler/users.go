@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"travel-backend/constants"
 	"travel-backend/controller"
 	request "travel-backend/interface"
@@ -18,7 +19,8 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 	var requestBody request.CreateUser
 	if err := ctx.BindJSON(&requestBody); err != nil {
 		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": constants.ERROR_INCORRECT_REQUEST,
+			"message": err,
+			"error":   constants.ERROR_INCORRECT_REQUEST,
 		})
 		return
 	}
@@ -28,6 +30,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(500, gin.H{
 			"error": err,
 		})
+		fmt.Println("--------- error in ctrl")
 	} else {
 		ctx.JSON(200, gin.H{
 			"message": "User created successfully",
@@ -47,6 +50,20 @@ func (h *Handler) GetUser(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"message": "Exams fetched successfully",
 			"user":    user,
+		})
+	}
+}
+
+func (h *Handler) GetAllUsers(ctx *gin.Context) {
+	users, err := controller.GetAllUsers(ctx, h.MongoClient)
+	if err != nil {
+		ctx.AbortWithStatusJSON(500, gin.H{
+			"error": err,
+		})
+	} else {
+		ctx.JSON(200, gin.H{
+			"message": "Users fetched successfully",
+			"users":   users,
 		})
 	}
 }
