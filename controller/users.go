@@ -79,7 +79,7 @@ func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *req
 		"_id": addFriendRequest.UserID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"friends": addFriendRequest.FriendID,
 		},
 	},
@@ -89,7 +89,7 @@ func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *req
 		"_id": addFriendRequest.FriendID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"friends": addFriendRequest.UserID,
 		},
 	},
@@ -108,7 +108,7 @@ func AddFriend(ctx *gin.Context, client *mongo.Client, addFriendRequest *request
 		"_id": addFriendRequest.UserID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"friends": addFriendRequest.FriendID,
 		},
 	},
@@ -118,7 +118,7 @@ func AddFriend(ctx *gin.Context, client *mongo.Client, addFriendRequest *request
 		"_id": addFriendRequest.FriendID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"friends": addFriendRequest.UserID,
 		},
 	},

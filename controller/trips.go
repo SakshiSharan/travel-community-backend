@@ -39,7 +39,7 @@ func CreateTrip(ctx *gin.Context, client *mongo.Client, createTripRequest *reque
 			"_id": bson.M{"$in": createTripRequest.Members},
 		},
 		bson.M{
-			"$push": bson.M{
+			"$addToSet": bson.M{
 				"trips": newId,
 			},
 		},
@@ -83,7 +83,7 @@ func JoinTrip(ctx *gin.Context, client *mongo.Client, joinTripRequest *request.J
 		"_id": joinTripRequest.TripID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"members": joinTripRequest.UserID,
 		},
 	},
@@ -93,7 +93,7 @@ func JoinTrip(ctx *gin.Context, client *mongo.Client, joinTripRequest *request.J
 		"_id": joinTripRequest.UserID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"trips": joinTripRequest.TripID,
 		},
 	},

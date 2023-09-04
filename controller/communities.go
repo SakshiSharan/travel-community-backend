@@ -32,7 +32,7 @@ func CreateCommunity(ctx *gin.Context, client *mongo.Client, createCommunityRequ
 			"_id": bson.M{"$in": createCommunityRequest.Members},
 		},
 		bson.M{
-			"$push": bson.M{
+			"$addToSet": bson.M{
 				"communities": newId,
 			},
 		},
@@ -71,7 +71,7 @@ func JoinCommunity(ctx *gin.Context, client *mongo.Client, joinCommunityRequest 
 		"_id": joinCommunityRequest.CommunityID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"members": joinCommunityRequest.UserID,
 		},
 	},
@@ -81,7 +81,7 @@ func JoinCommunity(ctx *gin.Context, client *mongo.Client, joinCommunityRequest 
 		"_id": joinCommunityRequest.UserID,
 	},
 	bson.M{
-		"$push": bson.M{
+		"$addToSet": bson.M{
 			"communities": joinCommunityRequest.CommunityID,
 		},
 	},
