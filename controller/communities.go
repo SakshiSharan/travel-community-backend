@@ -9,17 +9,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateCommunity(ctx *gin.Context, client *mongo.Client, createCommunityRequest *request.CreateCommunity) (*model.Community, error) {
 	var newId primitive.ObjectID = primitive.NewObjectID()
 	community := model.Community{
-		ID: newId,
-		Title: createCommunityRequest.Title,
+		ID:          newId,
+		Title:       createCommunityRequest.Title,
 		Description: createCommunityRequest.Description,
-		Members: createCommunityRequest.Members,
-		Privacy: createCommunityRequest.Privacy,
-		CreatedBy: createCommunityRequest.CreatedBy,
+		Members:     createCommunityRequest.Members,
+		Privacy:     createCommunityRequest.Privacy,
+		CreatedBy:   createCommunityRequest.CreatedBy,
 	}
 
 	_, err := client.Database(constants.DB).Collection(constants.COLLECTION_COMMUNITIES).InsertOne(ctx, community)
@@ -27,7 +28,7 @@ func CreateCommunity(ctx *gin.Context, client *mongo.Client, createCommunityRequ
 		return nil, err
 	}
 
-	_, err = client.Database(constants.DB).Collection(constants.COLLECTION_USERS).UpdateMany(ctx, 
+	_, err = client.Database(constants.DB).Collection(constants.COLLECTION_USERS).UpdateMany(ctx,
 		bson.M{
 			"_id": bson.M{"$in": createCommunityRequest.Members},
 		},
@@ -70,21 +71,23 @@ func JoinCommunity(ctx *gin.Context, client *mongo.Client, joinCommunityRequest 
 	client.Database(constants.DB).Collection(constants.COLLECTION_COMMUNITIES).FindOneAndUpdate(ctx, bson.M{
 		"_id": joinCommunityRequest.CommunityID,
 	},
-	bson.M{
-		"$addToSet": bson.M{
-			"members": joinCommunityRequest.UserID,
+		bson.M{
+			"$addToSet": bson.M{
+				"members": joinCommunityRequest.UserID,
+			},
 		},
-	},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&community)
 
 	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
 		"_id": joinCommunityRequest.UserID,
 	},
-	bson.M{
-		"$addToSet": bson.M{
-			"communities": joinCommunityRequest.CommunityID,
+		bson.M{
+			"$addToSet": bson.M{
+				"communities": joinCommunityRequest.CommunityID,
+			},
 		},
-	},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&user)
 
 	return &community, &user, nil

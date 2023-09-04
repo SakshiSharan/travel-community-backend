@@ -10,20 +10,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateUser(ctx *gin.Context, client *mongo.Client, createUserRequest *request.CreateUser) (*model.User, error) {
 	var newUserId primitive.ObjectID = primitive.NewObjectID()
 	user := model.User{
-		ID: newUserId,
-		FirstName: createUserRequest.FirstName,
-		LastName: createUserRequest.LastName,
-		Email: createUserRequest.Email,
-		Address: createUserRequest.Address,
-		ContactNo: createUserRequest.ContactNo,
+		ID:          newUserId,
+		FirstName:   createUserRequest.FirstName,
+		LastName:    createUserRequest.LastName,
+		Email:       createUserRequest.Email,
+		Address:     createUserRequest.Address,
+		ContactNo:   createUserRequest.ContactNo,
 		Communities: []primitive.ObjectID{},
-		Friends: []primitive.ObjectID{},
-		Trips: []primitive.ObjectID{},
+		Friends:     []primitive.ObjectID{},
+		Trips:       []primitive.ObjectID{},
 	}
 
 	var existingUser []model.User
@@ -39,7 +40,7 @@ func CreateUser(ctx *gin.Context, client *mongo.Client, createUserRequest *reque
 	cursor.All(ctx, &existingUser)
 	defer cursor.Close(ctx)
 
-	if(len(existingUser)>0) {
+	if len(existingUser) > 0 {
 		return nil, errors.New("User already exists")
 	}
 
@@ -69,7 +70,6 @@ func GetAllUsers(ctx *gin.Context, client *mongo.Client) (*[]model.User, error) 
 	return &users, nil
 }
 
-
 // Add user to pending reqs of other user and add other user to sentreqs of current user
 func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *request.AddFriend) (*model.User, *model.User, error) {
 	var user model.User
@@ -78,50 +78,53 @@ func SendFriendReq(ctx *gin.Context, client *mongo.Client, addFriendRequest *req
 	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
 		"_id": addFriendRequest.UserID,
 	},
-	bson.M{
-		"$addToSet": bson.M{
-			"friends": addFriendRequest.FriendID,
+		bson.M{
+			"$addToSet": bson.M{
+				"friends": addFriendRequest.FriendID,
+			},
 		},
-	},
 	).Decode(&user)
 
 	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
 		"_id": addFriendRequest.FriendID,
 	},
-	bson.M{
-		"$addToSet": bson.M{
-			"friends": addFriendRequest.UserID,
+		bson.M{
+			"$addToSet": bson.M{
+				"friends": addFriendRequest.UserID,
+			},
 		},
-	},
 	).Decode(&friend)
 
 	return &user, &friend, nil
 }
-
 
 // Very basic, later add friend request, approve and delete, different collection for friend requests or just add in user maybe.
 func AddFriend(ctx *gin.Context, client *mongo.Client, addFriendRequest *request.AddFriend) (*model.User, *model.User, error) {
 	var user model.User
 	var friend model.User
 
-	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
-		"_id": addFriendRequest.UserID,
-	},
-	bson.M{
-		"$addToSet": bson.M{
-			"friends": addFriendRequest.FriendID,
+	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx,
+		bson.M{
+			"_id": addFriendRequest.UserID,
 		},
-	},
+		bson.M{
+			"$addToSet": bson.M{
+				"friends": addFriendRequest.FriendID,
+			},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&user)
 
-	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
-		"_id": addFriendRequest.FriendID,
-	},
-	bson.M{
-		"$addToSet": bson.M{
-			"friends": addFriendRequest.UserID,
+	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx,
+		bson.M{
+			"_id": addFriendRequest.FriendID,
 		},
-	},
+		bson.M{
+			"$addToSet": bson.M{
+				"friends": addFriendRequest.UserID,
+			},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&friend)
 
 	return &user, &friend, nil

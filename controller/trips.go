@@ -9,24 +9,25 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateTrip(ctx *gin.Context, client *mongo.Client, createTripRequest *request.CreateTrip) (*model.Trip, error) {
 	var newId primitive.ObjectID = primitive.NewObjectID()
 	trip := model.Trip{
-		ID: newId,
-		Title: createTripRequest.Title,
-		Description: createTripRequest.Description,
-		Size: createTripRequest.Size,
-		Members: createTripRequest.Members,
-		CreatedBy: createTripRequest.CreatedBy,
-		Type: createTripRequest.Type,
+		ID:            newId,
+		Title:         createTripRequest.Title,
+		Description:   createTripRequest.Description,
+		Size:          createTripRequest.Size,
+		Members:       createTripRequest.Members,
+		CreatedBy:     createTripRequest.CreatedBy,
+		Type:          createTripRequest.Type,
 		StartLocation: createTripRequest.StartLocation,
-		EndLocation: createTripRequest.EndLocation,
-		Departure: createTripRequest.Departure,
-		Arrival: createTripRequest.Arrival,
-		Status: createTripRequest.Status,
-		Privacy: createTripRequest.Privacy,
+		EndLocation:   createTripRequest.EndLocation,
+		Departure:     createTripRequest.Departure,
+		Arrival:       createTripRequest.Arrival,
+		Status:        createTripRequest.Status,
+		Privacy:       createTripRequest.Privacy,
 	}
 
 	_, err := client.Database(constants.DB).Collection(constants.COLLECTION_TRIPS).InsertOne(ctx, trip)
@@ -34,7 +35,7 @@ func CreateTrip(ctx *gin.Context, client *mongo.Client, createTripRequest *reque
 		return nil, err
 	}
 
-	_, err = client.Database(constants.DB).Collection(constants.COLLECTION_USERS).UpdateMany(ctx, 
+	_, err = client.Database(constants.DB).Collection(constants.COLLECTION_USERS).UpdateMany(ctx,
 		bson.M{
 			"_id": bson.M{"$in": createTripRequest.Members},
 		},
@@ -71,7 +72,7 @@ func GetAllTrips(ctx *gin.Context, client *mongo.Client) (*[]model.Trip, error) 
 
 // Search
 // func ShowTrips(ctx *gin.Context, client *mongo.Client) {
-	
+
 // }
 
 // Add privacy functionalities later on
@@ -82,21 +83,23 @@ func JoinTrip(ctx *gin.Context, client *mongo.Client, joinTripRequest *request.J
 	client.Database(constants.DB).Collection(constants.COLLECTION_TRIPS).FindOneAndUpdate(ctx, bson.M{
 		"_id": joinTripRequest.TripID,
 	},
-	bson.M{
-		"$addToSet": bson.M{
-			"members": joinTripRequest.UserID,
+		bson.M{
+			"$addToSet": bson.M{
+				"members": joinTripRequest.UserID,
+			},
 		},
-	},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&trip)
 
 	client.Database(constants.DB).Collection(constants.COLLECTION_USERS).FindOneAndUpdate(ctx, bson.M{
 		"_id": joinTripRequest.UserID,
 	},
-	bson.M{
-		"$addToSet": bson.M{
-			"trips": joinTripRequest.TripID,
+		bson.M{
+			"$addToSet": bson.M{
+				"trips": joinTripRequest.TripID,
+			},
 		},
-	},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&user)
 
 	return &trip, &user, nil
