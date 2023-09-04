@@ -24,6 +24,20 @@ func (h *Handler) GetCommunity(ctx *gin.Context) {
 	}
 }
 
+func (h *Handler) GetAllCommunities(ctx *gin.Context) {
+	communities, err := controller.GetAllCommunities(ctx, h.MongoClient)
+	if err != nil {
+		ctx.AbortWithStatusJSON(500, gin.H{
+			"error": err,
+		})
+	} else {
+		ctx.JSON(200, gin.H{
+			"message":     "Communities fetched successfully",
+			"communities": communities,
+		})
+	}
+}
+
 func (h *Handler) CreateCommunity(ctx *gin.Context) {
 	var requestBody request.CreateCommunity
 	if err := ctx.BindJSON(&requestBody); err != nil {

@@ -52,6 +52,16 @@ func GetCommunity(ctx *gin.Context, client *mongo.Client, id *primitive.ObjectID
 	return &community, nil
 }
 
+func GetAllCommunities(ctx *gin.Context, client *mongo.Client) (*[]model.Community, error) {
+	var communities []model.Community
+	cursor, err := client.Database(constants.DB).Collection(constants.COLLECTION_COMMUNITIES).Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	cursor.All(ctx, &communities)
+	return &communities, nil
+}
+
 // Privacy settings later
 func JoinCommunity(ctx *gin.Context, client *mongo.Client, joinCommunityRequest *request.JoinCommunity) (*model.Community, *model.User, error) {
 	var user model.User

@@ -45,11 +45,13 @@ func main() {
 
 	// trip
 	router.GET("/trip/id", handler.GetTrip)
+	router.GET("/trip/all", handler.GetAllTrips)
 	router.POST("/trip", handler.CreateTrip)
 	router.PUT("/trip/join", handler.JoinTrip)
 
 	// community
 	router.GET("/community/id", handler.GetCommunity)
+	router.GET("/community/all", handler.GetAllCommunities)
 	router.POST("/community", handler.CreateCommunity)
 	router.PUT("/community/join", handler.JoinCommunity)
 

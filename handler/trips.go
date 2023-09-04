@@ -24,6 +24,20 @@ func (h *Handler) GetTrip(ctx *gin.Context) {
 	}
 }
 
+func (h *Handler) GetAllTrips(ctx *gin.Context) {
+	trips, err := controller.GetAllTrips(ctx, h.MongoClient)
+	if err != nil {
+		ctx.AbortWithStatusJSON(500, gin.H{
+			"error": err,
+		})
+	} else {
+		ctx.JSON(200, gin.H{
+			"message": "Trips fetched successfully",
+			"trips":   trips,
+		})
+	}
+}
+
 func (h *Handler) CreateTrip(ctx *gin.Context) {
 	var requestBody request.CreateTrip
 	if err := ctx.BindJSON(&requestBody); err != nil {

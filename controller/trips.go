@@ -59,6 +59,16 @@ func GetTrip(ctx *gin.Context, client *mongo.Client, id *primitive.ObjectID) (*m
 	return &trip, nil
 }
 
+func GetAllTrips(ctx *gin.Context, client *mongo.Client) (*[]model.Trip, error) {
+	var trips []model.Trip
+	cursor, err := client.Database(constants.DB).Collection(constants.COLLECTION_TRIPS).Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	cursor.All(ctx, &trips)
+	return &trips, nil
+}
+
 // Search
 // func ShowTrips(ctx *gin.Context, client *mongo.Client) {
 	
